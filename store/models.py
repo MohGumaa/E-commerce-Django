@@ -22,7 +22,7 @@ class Item(models.Model):
     label = models.CharField(choices=LABEL_CHOICES, max_length=1)
     slug = models.SlugField()
     description = models.TextField(null=True)
-    quantity = models.IntegerField(default=1)
+    
 
     def __str__(self):
         return self.name
@@ -31,19 +31,28 @@ class Item(models.Model):
         return reverse("product", kwargs={
             'slug': self.slug
         })
+    
+    def get_add_to_cart_url(self):
+        return reverse("add-to-cart", kwargs={'slug':self.slug})
+    
+    def get_remove_form_cart_url(self):
+        return reverse("remove-from-cart", kwargs={'slug':self.slug})
 
 class OrderItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ordered = models.BooleanField(default=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return self.item.name
+        return f"{self.quantity} of {self.item.name}"
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     items = models.ManyToManyField(OrderItem, blank=True)
     start_date = models.DateTimeField(auto_now_add=True)
     orderd_date = models.DateTimeField(null=True)
-    orderd = models.BooleanField(default=False)
+    ordered = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
